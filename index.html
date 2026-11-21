@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autovaloració gestió del temps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, elegant, reflective — a tool for school leaders, not a test.
+   IDEA: a weekly planner sheet with a tomato timer accent (Pomodoro).
+   PICTURE: the questionnaire itself, one ambit per page; the reports draw rings and bars.
+   COLOUR and TYPE: deep plum band, lilac-white paper, rose accent, periwinkle support, sage for consolidated; Manrope.
+   LAYOUT: one calm column up to 820px; stepper chips on top; reports stack the same way. */
+:root{color-scheme:light dark;
+--bg:light-dark(#f7f5fa,#16121d);--card:light-dark(#ffffff,#211b2b);--ink:light-dark(#241d35,#eee9f6);
+--mute:light-dark(#655d78,#aaa2bd);--line:light-dark(#e6e1ee,#332b40);--tom:light-dark(#cf4f68,#f07d92);
+--tomsoft:light-dark(#fae6ea,#3a1f29);--sl:light-dark(#5b6bb5,#9eaae6);--slsoft:light-dark(#eceaf6,#251f33);
+--ok:light-dark(#2f8574,#7fcdb9);--oksoft:light-dark(#e3f2ee,#17302b);--amb:light-dark(#e2915f,#f0ae84);
+--band:light-dark(#2b2142,#231a36);--bandink:#f4effb;--bandmute:#c9bfdc}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Manrope,system-ui,sans-serif;overflow-x:clip}
+.wrap{max-width:820px;margin:0 auto;padding:0 max(4vw,16px)}
+.band{background:var(--band);color:var(--bandink)}
+header{padding:clamp(28px,5vw,56px) 0 22px}
+header .lead,header .note,header label.f{color:var(--bandmute)}
+header input[type=text]{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.22);color:var(--bandink)}
+header input::placeholder{color:#a99fbf}
+header h1 span{color:#f3a3b2}
+h1{font-size:clamp(28px,5vw,42px);line-height:1.08;margin:0 0 10px;font-weight:800;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:22px;line-height:1.2;margin:0 0 6px;font-weight:800}
+h3{font-size:17px;margin:24px 0 8px;font-weight:700}
+.lead{color:var(--mute);margin:0 0 18px;max-width:62ch}
+.who{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:8px}
+label.f{display:grid;gap:4px;font-size:14px;color:var(--mute);font-weight:600}
+input[type=text],textarea,select{font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);min-height:44px;width:100%}
+textarea{min-height:96px;resize:vertical}
+input:focus-visible,button:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--tom);outline-offset:2px}
+.bar{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 0}
+.steps{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.steps button{flex:none;font:inherit;font-size:14px;font-weight:700;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 14px;min-height:40px;cursor:pointer;white-space:nowrap}
+.steps button small{font-weight:600;color:var(--mute);margin-left:4px}
+.steps button.on{background:var(--band);color:var(--bandink);border-color:var(--band)}
+.steps button.on small{color:inherit;opacity:.75}
+.steps button.done:not(.on){border-color:var(--ok);color:var(--ok)}
+.prog{height:6px;background:var(--line);border-radius:3px;margin-top:10px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--tom);width:0;transition:width .3s}
+.pcount{font-size:13px;color:var(--mute);margin-top:4px}
+.sec{padding:22px 0 8px}
+.sec .intro{color:var(--mute);margin:0 0 14px}
+.q{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.q p{margin:0 0 12px;font-weight:600}
+.q p b{display:inline-grid;place-items:center;min-width:1.9em;height:1.9em;border-radius:50%;background:var(--slsoft);color:var(--sl);font-size:13px;margin-right:8px;vertical-align:1px}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.opts button{font:inherit;font-size:14px;line-height:1.25;padding:10px 6px;min-height:48px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.opts button[aria-pressed=true]{background:var(--sl);border-color:var(--sl);color:#fff;font-weight:700}
+.opts button[aria-pressed=true].v1{background:var(--tom);border-color:var(--tom)}.opts button[aria-pressed=true].v2{background:var(--amb);border-color:var(--amb)}
+.opts button[aria-pressed=true].v4{background:var(--ok);border-color:var(--ok)}
+:root[data-theme=dark] .opts button[aria-pressed=true]{color:#111}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .opts button[aria-pressed=true]{color:#111}}
+.nav{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;padding:8px 0 40px}
+.btn{font:inherit;font-weight:700;font-size:15px;border-radius:12px;padding:12px 18px;min-height:46px;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.btn.pri{background:var(--tom);border-color:var(--tom);color:#fff}
+.btn.sm{font-size:14px;padding:8px 12px;min-height:40px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.msg{color:var(--sl);font-weight:600;font-size:14px;min-height:1.4em}
+.rep{padding:20px 0 10px}
+.hero{box-shadow:0 1px 0 var(--line),0 12px 30px -18px rgba(43,33,66,.35);display:grid;grid-template-columns:auto minmax(0,1fr);gap:20px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.ring{width:120px;height:120px}
+.hero .lvl{font-size:20px;font-weight:800;margin:0}
+.hero small{color:var(--mute)}
+.hero p{margin:8px 0 0;font-size:15px}
+.rows{display:grid;gap:10px;margin-top:6px}
+.row{display:grid;grid-template-columns:minmax(0,14em) minmax(0,1fr) 3.6em;gap:10px;align-items:center;font-size:15px}
+.row .t{height:14px;background:var(--line);border-radius:7px;overflow:hidden;display:flex}
+.row .t i{display:block;height:100%}
+.row b{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.leg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--mute);margin:4px 0 8px}
+.leg span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;background:var(--c)}
+ul.it{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+ul.it li{padding:10px 12px;border-radius:10px;font-size:15px}
+.it.f li{background:var(--oksoft)}.it.w li{background:var(--tomsoft)}
+.it li span{display:block;font-size:13px;color:var(--mute);margin-top:2px}
+.prop{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:14px;margin-bottom:10px}
+.prop h4{margin:0 0 6px;font-size:16px}
+.prop p{margin:4px 0;font-size:15px}
+.prop .k{font-weight:700;color:var(--sl)}
+.note{font-size:14px;color:var(--mute)}
+.box{background:var(--slsoft);border-radius:14px;padding:16px;margin:22px 0}
+.box h3{margin-top:0}
+.code{font-family:ui-monospace,Menlo,monospace;font-size:14px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px;overflow-wrap:anywhere;user-select:all}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 6px}
+.miss{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+details{margin-top:16px}summary{cursor:pointer;font-weight:700}
+.hide{display:none!important}
+@media(max-width:600px){.who{grid-template-columns:1fr}.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.hero{grid-template-columns:1fr;justify-items:start}.row{grid-template-columns:minmax(0,1fr) 3.6em}.row .t{grid-column:1/-1;grid-row:2}}
+@media(prefers-reduced-motion:reduce){.prog i{transition:none}}
+@media print{.bar,.nav,.actions,.box{display:none}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+<div class="band"><div class="wrap">
+<header>
+<h1>Autovaloració de la <span>gestió del temps</span></h1>
+<p class="lead">Una eina de reflexió per a direccions de centre educatiu. Respon amb sinceritat cada enunciat pensant en com treballes habitualment. Pots anar d'un àmbit a un altre lliurement i deixar preguntes per al final. En acabar obtindràs un informe amb els teus punts forts, els aspectes a millorar i propostes concretes.</p>
+<div class="who">
+<label class="f">Nom (opcional)<input type="text" id="nom" autocomplete="name"></label>
+<label class="f">Centre (opcional)<input type="text" id="centre" autocomplete="organization"></label>
+<label class="f">Grup (opcional)<input type="text" id="grup" placeholder="p. ex. Direccions Montsià"></label>
+</div>
+<p class="note">Les respostes es desen en aquest navegador. El nom i el centre no s'envien mai al grup.</p>
+</header>
+</div></div>
+<div class="bar"><div class="wrap">
+<nav class="steps" id="steps" aria-label="Àmbits"></nav>
+<div class="prog"><i id="pbar"></i></div>
+<div class="pcount" id="pcount"></div>
+</div></div>
+<main class="wrap">
+<section id="quiz"></section>
+<div class="nav" id="nav">
+<button class="btn" id="prev">← Anterior</button>
+<button class="btn pri" id="next">Següent →</button>
+</div>
+<section id="report" class="hide"></section>
+<section id="group" class="hide"></section>
+</main>
+<script>
+{
+const ESC=["Mai / Gairebé mai","Poques vegades","Sovint","Sempre / Gairebé sempre"];
+const CATS=[
+{k:"A",n:"Priorització i enfocament",i:"Com decideixes a què dediques el temps.",
+ r:"Defineix 3 prioritats del curs vinculades al projecte educatiu i fes-les servir com a filtre per acceptar, delegar o descartar tasques.",
+ g:"Taller pràctic de priorització amb la matriu d'Eisenhower aplicada a casos reals de direcció, i intercanvi de criteris per dir no i delegar dins dels equips directius.",
+ q:[["Distingeixo amb claredat entre les tasques urgents i les importants.","Aplicar un criteri explícit per classificar les tasques.","Fes servir la matriu d'Eisenhower cada dilluns: classifica les tasques en urgent/important i reserva temps fix per a les importants no urgents (projecte, acompanyament pedagògic)."],
+["Dedico la major part del meu temps a activitats que aporten valor al projecte educatiu del centre.","Alinear el temps real amb el projecte educatiu.","Durant una setmana anota en franges de 30 minuts què fas i marca què aporta al projecte educatiu. Fixa un percentatge objectiu de temps pedagògic i revisa'l al cap d'un mes."],
+["Reviso periòdicament les meves tasques per eliminar-ne les que no són rellevants.","Fer neteja periòdica de tasques.","Un cop al mes repassa la llista amb tres preguntes: és necessària?, l'he de fer jo?, cal fer-la ara? Elimina, delega o ajorna segons la resposta."],
+["Sé dir \"no\" a tasques o peticions que no s'alineen amb els objectius del centre.","Filtrar les peticions abans de comprometre't.","Prepara fórmules de resposta (\"Ara no ho puc assumir; ho podem mirar el dia X\", \"Qui més ho podria fer?\") i contrasta cada petició amb els objectius del curs abans de dir que sí."],
+["Delego aquelles tasques que poden fer altres membres de l'equip amb igual o millor resultat.","Delegar amb confiança i seguiment.","Fes un inventari de les tasques que fas per costum i que podria fer algú altre. Encarrega-les amb objectiu, termini i un punt de seguiment, i accepta que el resultat no serà idèntic al teu."]]},
+{k:"B",n:"Planificació i organització",i:"Com prepares i estructures la teva jornada i la setmana.",
+ r:"Instaura una rutina fixa de planificació setmanal (15 min) i un tancament diari (5 min) amb una sola eina de seguiment.",
+ g:"Sessió d'eines digitals de planificació (calendari i tasques) amb una plantilla de planificació setmanal, i un repte de 4 setmanes amb seguiment entre iguals.",
+ q:[["Planifico el meu dia o la meva setmana abans de començar-la.","Planificar abans d'actuar.","Reserva 15 minuts el divendres a la tarda o el dilluns a primera hora: 3 objectius clau de la setmana, reunions fixes i blocs de feina."],
+["Utilitzo eines digitals per fer seguiment de les tasques i terminis.","Centralitzar tasques i terminis en una sola eina.","Tria una eina (Google Calendar i Tasks, Microsoft To Do, Trello...) i registra-hi totes les tasques amb data. Evita repartir-les entre paper, correu i memòria."],
+["Tinc blocs de temps reservats al calendari per treballar sense interrupcions.","Reservar temps protegit al calendari.","Bloqueja 2 o 3 franges setmanals de 60-90 minuts com a \"treball de direcció\" i comunica-ho a l'equip i a secretaria perquè les respectin."],
+["Agrupo tasques similars per evitar canvis constants de context.","Agrupar tasques del mateix tipus.","Concentra correus, signatures i trucades en dues o tres franges al dia en lloc d'atendre'ls a mesura que arriben."],
+["Deixo uns minuts cada dia per revisar i ajustar la meva planificació.","Tancar el dia revisant la planificació.","Acaba cada jornada amb 5 minuts: què he fet, què queda pendent i quina serà la primera tasca de demà."]]},
+{k:"C",n:"Eficiència personal",i:"Com treballes un cop t'hi poses.",
+ r:"Protegeix blocs de concentració sense notificacions i comença el dia per la tasca més exigent.",
+ g:"Formació en tècniques de concentració (timeboxing, Pomodoro, gestió de notificacions) i intercanvi sobre l'organització física i digital del despatx de direcció.",
+ q:[["Em centro en una sola tasca a la vegada, evitant la multitasca.","Treballar en una sola tasca alhora.","Durant els blocs de concentració tanca el correu, silencia el mòbil i anota en un paper les idees que sorgeixin per reprendre-les després."],
+["Respecto els temps de descans durant la jornada.","Protegir els descansos.","Programa pauses breus (5-10 minuts) cada 90 minuts i defensa el temps d'esmorzar: el descans manté la qualitat de les decisions."],
+["M'asseguro que el meu espai de treball estigui endreçat i funcional.","Tenir un espai de treball funcional.","Dedica els darrers 5 minuts del dia a deixar la taula lliure i organitza el paper en tres safates: entrada, en curs i per arxivar."],
+["Completo primer les tasques més difícils o prioritàries del dia.","Començar per la tasca de més valor.","Identifica cada vespre la tasca més exigent de l'endemà i fes-la abans d'obrir el correu."],
+["Emmarco les tasques en intervals de temps concrets (p. ex. amb tècniques com Pomodoro o timeboxing).","Posar límits de temps a les tasques.","Prova la tècnica Pomodoro (25 minuts de feina + 5 de pausa) o assigna al calendari un temps màxim per a cada tasca i respecta'l."]]},
+{k:"D",n:"Equilibri i benestar",i:"Com separes la feina de la vida personal i cuides la teva energia.",
+ r:"Fixa una hora de tancament i un protocol d'urgències amb l'equip directiu perquè la desconnexió sigui possible i compartida.",
+ g:"Espai de reflexió sobre benestar i càrrega directiva, amb acords de desconnexió digital i protocols d'urgències compartits entre equips directius.",
+ q:[["Mantinc un límit clar entre el temps laboral i el personal.","Marcar una frontera entre feina i vida personal.","Defineix una hora de tancament i un petit ritual de sortida. Desactiva les notificacions del correu professional al mòbil fora d'horari."],
+["Puc desconnectar de la feina fora de l'horari laboral sense sentir-me culpable.","Desconnectar amb tranquil·litat.","Acorda amb l'equip directiu un canal només per a urgències reals fora d'horari. Si el protocol existeix, la resta pot esperar sense culpa."],
+["Puc relaxar-me durant el temps lliure oblidant-me de la feina.","Descansar de debò en el temps lliure.","Planifica activitats que t'absorbeixin (esport, música, natura, família) i deixa el mòbil de la feina fora de l'abast."],
+["Gestiono els moments de més pressió sense que afectin la qualitat de les meves decisions.","Mantenir la serenor en els moments crítics.","Identifica els pics de pressió del curs i prepara'ls amb antelació. Davant d'una situació tensa, pren-te uns minuts abans de decidir i, si pots, contrasta-ho amb algú de l'equip."],
+["Mantinc hàbits que em donen energia (descans, activitat física, temps per a mi) també en les èpoques de més feina.","Cuidar l'energia personal.","Posa a l'agenda, com una reunió més, una o dues activitats setmanals que et recarreguin i protegeix-les especialment en les èpoques de més càrrega."],
+["Em dono temps per reflexionar sobre com utilitzo el meu temps i quins hàbits puc millorar.","Reflexionar sobre els propis hàbits.","Reserva 20 minuts al mes per mirar l'agenda: on ha anat el temps, què t'ha sobrat i quin hàbit vols canviar el mes següent."]]},
+{k:"E",n:"Millora i aprenentatge",i:"Com revises, contrastes i fas créixer la teva manera de treballar.",
+ r:"Repeteix aquesta autovaloració cada trimestre, demana retorn a l'equip i prova una sola tècnica nova cada vegada.",
+ g:"Comunitat de pràctica de direccions amb trobades trimestrals per compartir eines, revisar els resultats d'aquesta autovaloració i fer seguiment dels compromisos.",
+ q:[["Reviso periòdicament com gestiono el temps per detectar àrees de millora.","Revisar la gestió del temps de manera sistemàtica.","Repeteix aquesta autovaloració cada trimestre, compara els resultats i tria una sola millora per període."],
+["Demano a l'equip el seu parer sobre com organitzo el temps compartit (reunions, encàrrecs, terminis).","Recollir el retorn de l'equip.","Un cop per trimestre fes dues preguntes breus a l'equip (què funciona i què canviaries de com organitzem reunions i encàrrecs) i comparteix què en faràs."],
+["Valoro l'eficàcia de les reunions que convoco (durada, ordre del dia, acords i seguiment).","Fer reunions més eficients.","Envia l'ordre del dia amb antelació, indica la durada de cada punt i tanca amb acords, responsables i dates. Al final, comprova si s'han assolit els objectius."],
+["Provo noves eines o tècniques de gestió del temps i en valoro els resultats abans d'incorporar-les.","Experimentar i avaluar noves pràctiques.","Prova una sola tècnica durant tres setmanes, anota què ha canviat i decideix si la mantens, l'adaptes o la deixes."],
+["Dedico temps a formar-me en lideratge i organització (lectures, cursos, xarxes de direccions).","Formar-se en lideratge i organització.","Inclou al teu pla de formació anual almenys una activitat sobre lideratge o organització i participa en les xarxes i seminaris de direccions del territori."],
+["Comparteixo amb altres directius estratègies que m'han ajudat a ser més eficient.","Compartir pràctiques amb altres direccions.","Proposa un espai breu a les trobades de direccions per explicar una eina o pràctica que et funcioni i aprendre la d'altres."]]},
+{k:"F",n:"Hàbits del dia a dia",i:"Rutines quotidianes que fan visible la gestió del temps.",
+ r:"Tria dos hàbits d'aquest àmbit i practica'ls 30 dies seguits abans d'afegir-ne de nous.",
+ g:"Repte col·lectiu d'hàbits durant un mes (llista diària, prioritats A/B/C, tancament de jornada) amb un breu seguiment a mig trimestre.",
+ q:[["Preparo cada dia una llista amb les tasques a fer.","Fer una llista diària.","Escriu cada matí (o el vespre anterior) una llista curta: un màxim de 3 prioritats i algunes tasques menors."],
+["Marco les prioritats a la llista de coses que he de fer en funció del benefici que em reporten.","Prioritzar la llista segons l'impacte.","Marca cada tasca amb A, B o C segons l'impacte que té per al centre i comença sempre per les A."],
+["Faig tot el que hi ha a la llista.","Fer llistes realistes.","Si sistemàticament no acabes la llista, segurament hi sobren tasques. Estima el temps de cadascuna i deixa un marge per als imprevistos, que en un centre sempre hi són."],
+["Escric i reviso de forma habitual les meves metes professionals i/o personals.","Tenir metes escrites i revisades.","Escriu 3-5 metes per al curs (professionals i personals) en un lloc visible i revisa-les un cop al mes."],
+["Faig cada dia alguna cosa que m'acosta a les meves fites a llarg termini.","Avançar cada dia en les fites a llarg termini.","Divideix cada fita del curs en passos petits i inclou-ne un a la llista de cada dia."],
+["Faig la feina més important en les hores de màxima energia.","Aprofitar les hores de més energia.","Observa durant una setmana en quina franja rendeixes més i reserva-la per a la feina important."],
+["Cada dia reservo una mica de temps per poder treballar tranquil·lament sense interrupcions.","Tenir cada dia un moment sense interrupcions.","Comença amb 30 minuts diaris, preferiblement a primera hora, amb la porta tancada i el telèfon desviat."],
+["Tinc la taula neta i endreçada.","Mantenir la taula lliure.","Aplica la regla \"a sobre la taula, només el que faig servir avui\". La resta, arxivat o a la safata corresponent."],
+["Poso cada cosa al seu lloc.","Assignar un lloc fix a cada cosa.","Defineix un lloc fix per a cada tipus de document i material i torna-hi cada objecte després de fer-lo servir."],
+["Trobo fàcilment allò que busco als arxius.","Ordenar els arxius digitals i en paper.","Acorda una estructura de carpetes comuna al Drive del centre i una manera de posar nom als fitxers (per exemple AAAA-MM-DD_tema)."],
+["Resolc de forma eficaç les interrupcions.","Gestionar millor les interrupcions.","Davant d'una interrupció pregunta \"és urgent?\". Si no ho és, ofereix un moment concret per atendre-la. Estableix i comunica uns horaris d'atenció."],
+["Després de ser interromput, puc tornar a la feina sense perdre el ritme.","Recuperar el fil després d'una interrupció.","Abans d'atendre la interrupció, anota en una línia on eres i quin era el pas següent. En tornar, comença per aquesta nota."]]},
+{k:"G",n:"Equip i compromisos",i:"Com et coordines amb els altres i compleixes el que et proposes.",
+ r:"Fes visible la teva disponibilitat, documenta els processos clau i treballa amb dates internes anteriors a les oficials.",
+ g:"Taller sobre delegació, gestió de persones que requereixen molta dedicació i elaboració de manuals de processos que garanteixin la continuïtat de la direcció.",
+ q:[["Actuo amb decisió.","Prendre decisions a temps.","Per a les decisions menors posa't un termini curt. Per a les importants, defineix els criteris, a qui cal consultar i la data en què decidiràs."],
+["Procuro preveure els problemes en lloc d'esperar a resoldre'ls quan han aparegut.","Anticipar-se als problemes.","Revisa el calendari del trimestre per detectar els moments de més càrrega (avaluacions, preinscripció, memòries) i prepara'ls amb setmanes d'antelació."],
+["Compleixo amb els terminis amb temps de sobra.","Treballar amb marge sobre els terminis.","Posa't una data límit interna una setmana abans de l'oficial i anota-la al calendari."],
+["Començo i acabo els projectes en les dates previstes.","Complir el calendari dels projectes.","Desglossa cada projecte en fites amb data i responsable i revisa'n l'estat cada dues setmanes."],
+["Arribo a temps a les reunions, i a altres convocatòries.","Ser puntual.","Deixa 10 minuts de marge entre reunions al calendari i activa un avís 5 minuts abans de cadascuna."],
+["Tracto adequadament a les persones que requereixen molta dedicació.","Gestionar les persones que demanen molt temps.","Planifica aquestes trobades amb antelació, fixa'n la durada i l'objectiu, i tanca-les amb acords per escrit."],
+["La gent sap quin és el millor moment per estar amb mi.","Fer visible la teva disponibilitat.","Publica uns horaris d'atenció i de porta oberta i comunica'ls al claustre, al PAS i a les famílies."],
+["Quan ho necessito, demano a un company que m'ajudi a fer una tasca.","Demanar ajuda quan cal.","Identifica les fortaleses de cada membre de l'equip i demana suport concret, amb un encàrrec clar i un termini."],
+["Si em trobo en la situació anterior, els meus companys cooperen amb entusiasme.","Afavorir la cooperació de l'equip.","Explica el perquè de cada petició, reparteix les càrregues de manera equitativa i reconeix públicament les col·laboracions."],
+["Els altres poden fer-se càrrec de les meves responsabilitats si no soc a la feina.","Garantir la continuïtat quan no hi ets.","Documenta els processos clau (protocols, calendaris, contactes) en un espai compartit i prepara una persona suplent per a cada responsabilitat."]]}];
+const Q=[];CATS.forEach(c=>c.q.forEach(a=>Q.push({n:Q.length+1,c:c.k,t:a[0],m:a[1],p:a[2]})));
+const NQ=Q.length,CODEV="GT2";
+const catN=k=>CATS.find(c=>c.k===k).n;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let ans={},step=0,downloads=null,db=null,user=null,uid=null,coord=false;
+const KEY="autoval-temps-v2";
+const hash=(location.hash||"").slice(1);
+try{const s=JSON.parse(localStorage.getItem(KEY)||"{}");ans=s.ans||{};$("nom").value=s.nom||"";$("centre").value=s.centre||"";$("grup").value=s.grup||"";
+  step=["r","g"].includes(s.step)?s.step:Math.min(+s.step||0,CATS.length-1)}catch(e){}
+if(hash&&hash!=="coordinacio"&&!$("grup").value)$("grup").value=decodeURIComponent(hash).replace(/-/g," ");
+if(hash==="coordinacio")coord=true;
+if(step==="g"&&!coord)step=0;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({ans,nom:$("nom").value,centre:$("centre").value,grup:$("grup").value,step}))}catch(e){}};
+["nom","centre","grup"].forEach(i=>$(i).addEventListener("input",save));
+
+const qOf=k=>Q.filter(q=>q.c===k);
+const cntOf=k=>qOf(k).filter(q=>ans[q.n]).length;
+function renderSteps(){
+  const st=[...CATS.map((c,i)=>{const n=cntOf(c.k),t=c.q.length;return`<button data-s="${i}" class="${i===step?"on":""} ${n===t?"done":""}">${c.k} · ${c.n}<small>${n}/${t}</small></button>`}),
+    `<button data-s="r" class="${step==="r"?"on":""}">Informe</button>`];
+  if(coord)st.push(`<button data-s="g" class="${step==="g"?"on":""}">Resultats del grup</button>`);
+  $("steps").innerHTML=st.join("");
+  const n=Object.keys(ans).length;$("pbar").style.width=(n/NQ*100)+"%";
+  $("pcount").textContent=`${n} de ${NQ} respostes`;
+  const on=$("steps").querySelector(".on");if(on)on.scrollIntoView({block:"nearest",inline:"nearest"});
+}
+function renderQuiz(){
+  const c=CATS[step];
+  $("quiz").innerHTML=`<div class="sec"><h2>${c.k}. ${esc(c.n)}</h2><p class="intro">${esc(c.i)}</p>${qOf(c.k).map(q=>`
+  <div class="q" id="q${q.n}"><p><b>${q.n}</b>${esc(q.t)}</p><div class="opts" role="group" aria-label="Resposta ${q.n}">
+  ${ESC.map((e,v)=>`<button class="v${v+1}" data-q="${q.n}" data-v="${v+1}" aria-pressed="${ans[q.n]===v+1}">${e}</button>`).join("")}</div></div>`).join("")}</div>`;
+  $("prev").disabled=step===0;
+  $("next").textContent=step===CATS.length-1?"Veure l'informe →":"Següent →";
+}
+function go(s,focusQ){
+  step=s;save();
+  const isQ=typeof s==="number";
+  $("quiz").classList.toggle("hide",!isQ);$("nav").classList.toggle("hide",!isQ);
+  $("report").classList.toggle("hide",s!=="r");$("group").classList.toggle("hide",s!=="g");
+  if(isQ)renderQuiz();else if(s==="r")renderReport();else renderGroup();
+  renderSteps();
+  if(focusQ&&$("q"+focusQ))$("q"+focusQ).scrollIntoView({block:"center"});
+  else window.scrollTo({top:document.querySelector(".bar").offsetTop,behavior:"auto"});
+}
+$("quiz").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-q]");if(!b)return;
+  const q=+b.dataset.q,v=+b.dataset.v;
+  if(ans[q]===v)delete ans[q];else ans[q]=v;save();
+  b.parentElement.querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",ans[q]===+x.dataset.v));
+  renderSteps();
+});
+$("steps").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const s=b.dataset.s;go(s==="r"||s==="g"?s:+s)});
+$("prev").addEventListener("click",()=>go(Math.max(0,step-1)));
+$("next").addEventListener("click",()=>go(step<CATS.length-1?step+1:"r"));
+
+/* ---------- scoring ---------- */
+const pct=v=>Math.round((v-1)/3*100);
+const lvl=p=>p>=75?"Consolidat":p>=50?"En bon camí":p>=30?"En desenvolupament":"Àmbit a reforçar";
+const tone=p=>p>=75?"ok":p>=50?"sl":"tom";
+const answeredOf=a=>Q.filter(q=>a[q.n]);
+const avgOf=(a,qs)=>qs.length?qs.reduce((s,q)=>s+a[q.n],0)/qs.length:0;
+function catScores(a){return CATS.map(c=>{const qs=qOf(c.k).filter(q=>a[q.n]);return{c,p:qs.length?pct(avgOf(a,qs)):null}})}
+function globalOf(a){const qs=answeredOf(a);return qs.length?pct(avgOf(a,qs)):null}
+
+/* ---------- block model -> html / pdf / text ---------- */
+function indivBlocks(){
+  const a=ans,done=answeredOf(a),B=[];
+  const glob=done.length?globalOf(a):0,cats=catScores(a),valid=cats.filter(x=>x.p!==null);
+  const pri=valid.length?valid.reduce((x,y)=>y.p<x.p?y:x):null,best=valid.length?valid.reduce((x,y)=>y.p>x.p?y:x):null;
+  B.push({k:"title",s:"Informe d'autovaloració"});
+  B.push({k:"meta",s:[$("nom").value.trim(),$("centre").value.trim(),new Date().toLocaleDateString("ca-ES",{day:"numeric",month:"long",year:"numeric"})].filter(Boolean).join(" · ")+(done.length<NQ?` · Informe parcial: ${done.length} de ${NQ} respostes`:"")});
+  B.push({k:"score",p:glob,s:"Índex global de gestió del temps (0% = sempre \"Mai\", 100% = sempre \"Sempre\").",x:best&&pri&&best!==pri?`L'àmbit més sòlid és ${best.c.n} (${best.p}%) i el que té més marge de millora és ${pri.c.n} (${pri.p}%).`:""});
+  B.push({k:"h",s:"Resultats per àmbits"});
+  B.push({k:"bars",rows:cats.map(x=>({l:`${x.c.k}. ${x.c.n}`,p:x.p}))});
+  let forts=done.filter(q=>a[q.n]===4),fn="";
+  if(forts.length<3){forts=done.filter(q=>a[q.n]>=3).sort((x,y)=>a[y.n]-a[x.n]);fn="Inclou els enunciats valorats com a \"Sovint\" o \"Sempre\"."}
+  let feb=done.filter(q=>a[q.n]<=2).sort((x,y)=>a[x.n]-a[y.n]||x.n-y.n),wn="";
+  if(!feb.length&&done.length){feb=done.filter(q=>a[q.n]===3);wn="No hi ha cap enunciat per sota de \"Sovint\". Aquests són els que encara tenen marge per arribar a \"Sempre\"."}
+  const row=q=>({s:`${q.n}. ${q.t}`,sub:`${ESC[a[q.n]-1]} · ${catN(q.c)}`});
+  B.push({k:"h",s:"Punts forts"});if(fn)B.push({k:"note",s:fn});
+  B.push(forts.length?{k:"items",tone:"f",rows:forts.slice(0,10).map(row)}:{k:"note",s:"Encara no hi ha cap enunciat valorat com a \"Sovint\" o \"Sempre\"."});
+  B.push({k:"h",s:"Punts febles"});if(wn)B.push({k:"note",s:wn});
+  B.push(feb.length?{k:"items",tone:"w",rows:feb.map(row)}:{k:"note",s:"Cap enunciat per sota de \"Sovint\"."});
+  B.push({k:"h",s:"Aspectes de millora i propostes"});
+  const props=feb.slice(0,8);
+  if(props.length){B.push({k:"note",s:`Ordenades de més a menys urgent segons les teves respostes${feb.length>8?" (es mostren les 8 primeres)":""}.`});
+    props.forEach(q=>B.push({k:"prop",h:`${q.n}. ${q.m}`,lines:[["Ara",ESC[a[q.n]-1]],["Com fer-ho",q.p]]}))}
+  else B.push({k:"note",s:"Mantén els hàbits actuals i comparteix-los amb altres direccions."});
+  if(pri){B.push({k:"h",s:"Àmbit prioritari: "+pri.c.n});B.push({k:"p",s:pri.c.r})}
+  B.push({k:"h",s:"Pla d'acció per als propers 30 dies"});
+  ["1. Tria només una o dues propostes: les més fàcils d'aplicar i amb més impacte.","2. Concreta quan ho faràs (dia i hora a l'agenda) i com sabràs que ho has aconseguit.","3. Comparteix-ho amb algú de l'equip directiu perquè t'ajudi a mantenir el compromís.","4. D'aquí a un trimestre, torna a fer aquesta autovaloració i compara els resultats."].forEach(s=>B.push({k:"p",s}));
+  B.push({k:"note",s:"Aquest informe és una eina de reflexió personal, no una avaluació. El seu valor depèn de la sinceritat de les respostes."});
+  return B;
+}
+function ring(p){const r=50,C=2*Math.PI*r;return`<svg class="ring" viewBox="0 0 120 120" role="img" aria-label="${p}%"><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--line)" stroke-width="12"/><circle cx="60" cy="60" r="${r}" fill="none" stroke="var(--${tone(p)})" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C*p/100} ${C}" transform="rotate(-90 60 60)"/><text x="60" y="68" text-anchor="middle" font-size="26" font-weight="800" fill="currentColor" font-family="Manrope,sans-serif">${p}%</text></svg>`}
+const DC=["var(--tom)","var(--amb)","var(--sl)","var(--ok)"];
+function toHTML(B){return B.map(b=>{switch(b.k){
+  case"title":return`<h2>${esc(b.s)}</h2>`;
+  case"meta":return`<p class="note">${esc(b.s)}</p>`;
+  case"score":return`<div class="hero">${ring(b.p)}<div><p class="lvl">${b.lab?esc(b.lab):lvl(b.p)}</p><small>${esc(b.s)}</small>${b.x?`<p>${esc(b.x)}</p>`:""}</div></div>`;
+  case"h":return`<h3>${esc(b.s)}</h3>`;
+  case"p":return`<p>${esc(b.s)}</p>`;
+  case"note":return`<p class="note">${esc(b.s)}</p>`;
+  case"bars":return`<div class="rows">${b.rows.map(r=>`<div class="row"><span>${esc(r.l)}</span><span class="t"><i style="width:${r.p||0}%;background:var(--${r.t||tone(r.p||0)})"></i></span><b>${r.v??(r.p===null?"–":r.p+"%")}</b></div>`).join("")}</div>`;
+  case"dist":return`<div class="leg">${ESC.map((e,i)=>`<span style="--c:${DC[i]}">${e}</span>`).join("")}</div><div class="rows">${b.rows.map(r=>{const t=r.c.reduce((x,y)=>x+y,0)||1;return`<div class="row"><span>${esc(r.l)}</span><span class="t">${r.c.map((n,i)=>`<i style="width:${n/t*100}%;background:${DC[i]}" title="${ESC[i]}: ${n}"></i>`).join("")}</span><b>${esc(r.v)}</b></div>`}).join("")}</div>`;
+  case"items":return`<ul class="it ${b.tone}">${b.rows.map(r=>`<li>${esc(r.s)}<span>${esc(r.sub)}</span></li>`).join("")}</ul>`;
+  case"prop":return`<div class="prop"><h4>${esc(b.h)}</h4>${b.lines.map(l=>`<p><span class="k">${esc(l[0])}:</span> ${esc(l[1])}</p>`).join("")}</div>`;
+  case"details":return`<details><summary>${esc(b.s)}</summary>${toHTML(b.B)}</details>`;
+}return""}).join("")}
+function toText(B){const L=[];B.forEach(b=>{switch(b.k){
+  case"title":L.push(b.s.toUpperCase());break;case"meta":L.push(b.s,"");break;
+  case"score":L.push(`Índex global: ${b.p}% (${b.lab||lvl(b.p)})`);if(b.x)L.push(b.x);break;
+  case"h":L.push("",b.s.toUpperCase());break;case"p":case"note":L.push(b.s);break;
+  case"bars":b.rows.forEach(r=>L.push(`- ${r.l}: ${r.v??(r.p===null?"–":r.p+"%")}`));break;
+  case"dist":b.rows.forEach(r=>L.push(`- ${r.l}: ${r.v} (${r.c.join(" / ")})`));break;
+  case"items":b.rows.forEach(r=>L.push(`- ${r.s} (${r.sub})`));break;
+  case"prop":L.push(b.h);b.lines.forEach(l=>L.push(`   ${l[0]}: ${l[1]}`));break;
+  case"details":L.push("",b.s.toUpperCase());L.push(toText(b.B));break}});return L.join("\n")}
+function toPDF(B,title){
+  const {jsPDF}=window.jspdf;const d=new jsPDF({unit:"mm",format:"a4"});
+  const X=18,CW=174;let y=20;
+  const T=s=>String(s).replace(/[’‘]/g,"'").replace(/[“”«»]/g,'"').replace(/[–—]/g,"-");
+  const C={ink:[36,29,53],mute:[101,93,120],tom:[207,79,104],sl:[91,107,181],ok:[47,133,116],amb:[226,145,95],line:[230,225,238],band:[43,33,66]};
+  const DCP=[C.tom,C.amb,C.sl,C.ok];
+  const need=h=>{if(y+h>282){d.addPage();y=20}};
+  const txt=(s,o={})=>{d.setFont("helvetica",o.b?"bold":"normal");const sz=o.sz||10.5;d.setFontSize(sz);d.setTextColor(...(o.c||C.ink));
+    const lines=d.splitTextToSize(T(s),o.w||CW);const lh=sz*0.42;need(lines.length*lh+1);d.text(lines,o.x||X,y);y+=lines.length*lh+(o.after??2)};
+  const barRows=(rows,stack)=>rows.forEach(r=>{
+    const lab=d.splitTextToSize(T(r.l),68);const h=Math.max(8,lab.length*4.2+2);need(h);
+    d.setFont("helvetica","normal");d.setFontSize(9.5);d.setTextColor(...C.ink);d.text(lab,X,y+3.5);
+    const bx=X+72,bw=CW-72-18;d.setFillColor(...C.line);d.rect(bx,y,bw,4.5,"F");
+    if(stack){const t=r.c.reduce((a,b)=>a+b,0)||1;let cx=bx;r.c.forEach((n,i)=>{const w=bw*n/t;if(w>0){d.setFillColor(...DCP[i]);d.rect(cx,y,w,4.5,"F");cx+=w}})}
+    else if(r.p){d.setFillColor(...C[r.t||tone(r.p)]);d.rect(bx,y,bw*r.p/100,4.5,"F")}
+    d.setFont("helvetica","bold");d.text(T(r.v??(r.p===null?"-":r.p+"%")),X+CW,y+3.5,{align:"right"});y+=h});
+  const run=BB=>BB.forEach(b=>{switch(b.k){
+    case"title":txt(b.s,{b:1,sz:18,after:3});break;
+    case"meta":txt(b.s,{c:C.mute,sz:9.5,after:6});break;
+    case"score":need(26);d.setFillColor(...C[tone(b.p)]);d.roundedRect(X,y,34,18,3,3,"F");d.setTextColor(255);d.setFont("helvetica","bold");d.setFontSize(18);d.text(b.p+"%",X+17,y+12,{align:"center"});
+      {const y0=y;y+=6;txt(b.lab||lvl(b.p),{b:1,sz:13,x:X+40,w:CW-40,after:1});txt(b.s,{c:C.mute,sz:9,x:X+40,w:CW-40,after:1});if(b.x)txt(b.x,{sz:9.5,x:X+40,w:CW-40,after:1});y=Math.max(y,y0+20)+4}break;
+    case"h":y+=3;need(14);txt(b.s,{b:1,sz:13,after:3});break;
+    case"p":txt(b.s,{after:2});break;case"note":txt(b.s,{c:C.mute,sz:9.5});break;
+    case"bars":barRows(b.rows,false);break;
+    case"dist":{let lx=X;d.setFontSize(8.5);ESC.forEach((e,i)=>{d.setFillColor(...DCP[i]);d.rect(lx,y-2.6,3,3,"F");d.setTextColor(...C.mute);d.text(T(e),lx+4.5,y);lx+=d.getTextWidth(T(e))+10});y+=5;barRows(b.rows,true)}break;
+    case"items":b.rows.forEach(r=>{txt(r.s,{c:b.tone==="f"?C.ok:C.tom,after:.5});txt(r.sub,{c:C.mute,sz:8.5,after:2.5})});break;
+    case"prop":need(22);txt(b.h,{b:1,after:1});b.lines.forEach(l=>txt(l[0]+": "+l[1],{sz:10,c:l[0]==="Ara"||l[0]==="Grup"?C.mute:C.ink,after:1}));y+=3;break;
+    case"details":y+=3;need(14);txt(b.s,{b:1,sz:13,after:3});run(b.B);break}});
+  d.setFillColor(...C.band);d.rect(0,0,210,9,"F");txt(title,{b:1,sz:11,c:C.tom,after:2});run(B);
+  return d.output("blob");
+}
+function htmlDoc(B,title){
+  const css=[...document.querySelectorAll("style")].map(s=>s.textContent).join("\n");
+  return `<!DOCTYPE html><html lang="ca"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${esc(title)}</title><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet"><style>${css}:root{color-scheme:light}body{padding:0 0 24px}@media print{.prop,.hero,li,.row{break-inside:avoid}}</style></head><body><div class="band"><div class="wrap"><header><h1>${esc(title)}</h1></header></div></div><main class="wrap">${toHTML(B)}</main></body></html>`;
+}
+const slug=s=>s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+async function saveFile(name,data,msgEl){
+  msgEl.textContent="";
+  if(!downloads){const blob=data instanceof Blob?data:new Blob([data],{type:name.endsWith(".csv")?"text/csv":"text/html"});
+    const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);msgEl.textContent="Fitxer descarregat.";return}
+  try{await downloads.save({filename:name,data});msgEl.textContent="Fitxer desat."}
+  catch(e){const c=e&&e.code;msgEl.textContent=c==="declined"?"Descàrrega cancel·lada.":c==="rate_limited"?"Espera un moment i torna-ho a provar.":"No s'ha pogut descarregar. Prova «Copiar el text»."}
+}
+function dlButtons(id){return`<button class="btn pri hide" id="${id}pdf">Descarregar (PDF)</button><button class="btn hide" id="${id}html">Descarregar (pàgina web)</button><button class="btn" id="${id}copy">Copiar el text</button>`}
+function wireDl(id,getB,title,fname,msgEl,extra){
+  const okPdf=!!(window.jspdf&&window.jspdf.jsPDF);
+  {$(id+"html").classList.remove("hide");if(okPdf)$(id+"pdf").classList.remove("hide");if(extra)extra()}
+  $(id+"pdf").onclick=()=>saveFile(fname+".pdf",toPDF(getB(),title),msgEl);
+  $(id+"html").onclick=()=>saveFile(fname+".html",htmlDoc(getB(),title),msgEl);
+  $(id+"copy").onclick=async()=>{try{await navigator.clipboard.writeText(title+"\n\n"+toText(getB()));msgEl.textContent="Text copiat."}catch(e){msgEl.textContent="No s'ha pogut copiar en aquest navegador."}};
+}
+
+/* ---------- result code ---------- */
+const myCode=()=>{const g=$("grup").value.trim();return CODEV+"."+Q.map(q=>ans[q.n]||0).join("")+(g?"."+encodeURIComponent(g):"")};
+function parseCodes(text){
+  const re=new RegExp(CODEV+"\\.([0-4]{"+NQ+"})(?:\\.([^\\s,;]+))?","g");const out=[];let m;
+  while((m=re.exec(text))){let g="";try{g=decodeURIComponent(m[2]||"")}catch(e){g=m[2]||""}out.push({code:m[0],a:m[1],grup:g.trim()})}
+  return out;
+}
+const toAns=digits=>{const a={};[...digits].forEach((d,i)=>{if(+d)a[i+1]=+d});return a};
+
+/* ---------- individual report ---------- */
+function renderReport(){
+  const missing=Q.filter(q=>!ans[q.n]);
+  const fname="autovaloracio-gestio-temps"+($("nom").value.trim()?"-"+slug($("nom").value.trim()):"");
+  $("report").innerHTML=`<div class="rep">
+${missing.length?`<div class="box"><h3>Et falten ${missing.length} respostes</h3><p class="note">L'informe es calcula amb les preguntes contestades. Pots completar-les quan vulguis:</p><div class="miss">${missing.map(q=>`<button class="btn sm" data-goto="${q.n}">${q.n}</button>`).join("")}</div></div>`:""}
+${Object.keys(ans).length?toHTML(indivBlocks()):`<p class="note">Encara no has respost cap pregunta.</p>`}
+<div class="actions">${dlButtons("i")}<button class="btn" id="edit">Revisar respostes</button><button class="btn" id="reset">Començar de nou</button></div>
+<div class="msg" id="rmsg" role="status"></div>
+<div class="box" id="share"><h3>Compartir amb el grup</h3>
+<p class="note">Si qui coordina el grup t'ho demana, comparteix el teu resultat. És anònim: no inclou ni el nom ni el centre, només les respostes${$("grup").value.trim()?` i el grup «${esc($("grup").value.trim())}»`:""}.</p>
+<div id="sendwrap" class="hide"><div class="actions"><button class="btn pri" id="send">Enviar les meves respostes al grup</button></div><p class="note" id="sendst"></p></div>
+<p class="note" style="margin-bottom:6px">També pots copiar aquest codi i enviar-lo per correu a qui coordina:</p>
+<div class="code" id="mycode">${esc(myCode())}</div>
+<div class="actions"><button class="btn sm" id="copycode">Copiar el codi</button></div></div>
+</div>`;
+  $("report").querySelectorAll("[data-goto]").forEach(b=>b.onclick=()=>{const q=Q[+b.dataset.goto-1];go(CATS.findIndex(c=>c.k===q.c),q.n)});
+  if(Object.keys(ans).length)wireDl("i",indivBlocks,"Autovaloració de la gestió del temps",fname,$("rmsg"));
+  else ["ipdf","ihtml","icopy"].forEach(i=>$(i).classList.add("hide"));
+  $("edit").onclick=()=>go(0);
+  let armed=false;
+  $("reset").onclick=()=>{if(!armed){armed=true;$("reset").textContent="Segur? Es perdran les respostes";return}ans={};$("nom").value="";$("centre").value="";go(0)};
+  $("copycode").onclick=async()=>{try{await navigator.clipboard.writeText(myCode());$("rmsg").textContent="Codi copiat."}catch(e){$("rmsg").textContent="Selecciona el codi i copia'l manualment."}};
+  setupSend();
+}
+async function setupSend(){
+  if(!db||!uid)return;
+  $("sendwrap").classList.remove("hide");
+  const ref=db.doc("respostes/"+uid);
+  try{const s=await ref.get();if(s.exists){const at=s.data().at;$("sendst").textContent=`Ja vas enviar les teves respostes${at?" el "+new Date(at).toLocaleDateString("ca-ES"):""}. Si les tornes a enviar, s'actualitzaran.`}}catch(e){}
+  $("send").onclick=async()=>{
+    if(!Object.keys(ans).length){$("sendst").textContent="Primer respon alguna pregunta.";return}
+    $("send").disabled=true;$("sendst").textContent="Enviant…";
+    try{await ref.set({v:2,a:Q.map(q=>ans[q.n]||0).join(""),grup:$("grup").value.trim().slice(0,80),at:new Date().toISOString()});
+      $("sendst").textContent="Respostes enviades. Gràcies!"}
+    catch(e){$("sendst").textContent="No s'han pogut enviar des d'aquí (cal tenir permís de col·laborador). Copia el codi de sota i envia'l per correu."}
+    $("send").disabled=false};
+}
+
+/* ---------- group view ---------- */
+let online=[],imported=[],gState="idle",gFilter="__all",gTimer=null,subs=false;
+try{imported=JSON.parse(localStorage.getItem(KEY+"-imp")||"[]")}catch(e){}
+const saveImp=async()=>{try{localStorage.setItem(KEY+"-imp",JSON.stringify(imported))}catch(e){}
+  if(db&&coord){try{await db.doc("grup/importats").set({codes:imported})}catch(e){}}};
+function subscribe(){
+  if(subs||!db||!coord)return;subs=true;gState="loading";
+  gTimer=setTimeout(()=>{if(gState==="loading"){gState="slow";if(step==="g")renderGroup()}},10000);
+  db.collection("respostes").onSnapshot(s=>{online=s.docs.map(d=>d.data()).filter(x=>x&&typeof x.a==="string"&&x.a.length===NQ);
+      if(!s.metadata.fromCache){gState="ok";clearTimeout(gTimer)}if(step==="g")renderGroup()},
+    ()=>{gState="err";clearTimeout(gTimer);if(step==="g")renderGroup()});
+  db.doc("grup/importats").onSnapshot(s=>{if(s.exists){const c=s.data().codes;if(Array.isArray(c)){const m=new Map(imported.map(x=>[x.code,x]));c.forEach(x=>x&&x.code&&m.set(x.code,x));imported=[...m.values()];try{localStorage.setItem(KEY+"-imp",JSON.stringify(imported))}catch(e){}if(step==="g")renderGroup()}}},()=>{});
+}
+function entries(){
+  const all=[...online.map(x=>({a:toAns(x.a),grup:(x.grup||"").trim(),src:"en línia"})),...imported.map(x=>({a:toAns(x.a),grup:x.grup||"",src:"codi"}))].filter(e=>Object.keys(e.a).length);
+  return all;
+}
+function groupBlocks(list,label){
+  const B=[],n=list.length;
+  B.push({k:"title",s:"Resultats del grup"});
+  B.push({k:"meta",s:`${label} · ${n} ${n===1?"resposta":"respostes"} · ${new Date().toLocaleDateString("ca-ES",{day:"numeric",month:"long",year:"numeric"})}`});
+  const globs=list.map(e=>globalOf(e.a));const gm=Math.round(globs.reduce((a,b)=>a+b,0)/n);
+  const cs=CATS.map(c=>{const v=list.map(e=>catScores(e.a).find(x=>x.c===c).p).filter(x=>x!==null);return{c,p:v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null}});
+  const valid=cs.filter(x=>x.p!==null),sorted=[...valid].sort((a,b)=>a.p-b.p);
+  B.push({k:"score",p:gm,s:"Mitjana de l'índex global dels participants.",x:sorted.length>1?`Àmbit més sòlid del grup: ${sorted[sorted.length-1].c.n} (${sorted[sorted.length-1].p}%). Àmbit amb més necessitat: ${sorted[0].c.n} (${sorted[0].p}%).`:""});
+  B.push({k:"h",s:"Distribució dels participants per nivell"});
+  const L=[["Consolidat","ok"],["En bon camí","sl"],["En desenvolupament","amb"],["Àmbit a reforçar","tom"]];
+  B.push({k:"bars",rows:L.map(([l,t])=>{const c=globs.filter(g=>lvl(g)===l).length;return{l,t,p:Math.round(c/n*100),v:`${c}`}})});
+  B.push({k:"h",s:"Mitjana per àmbits"});
+  B.push({k:"bars",rows:cs.map(x=>({l:`${x.c.k}. ${x.c.n}`,p:x.p}))});
+  const items=Q.map(q=>{const v=list.map(e=>e.a[q.n]).filter(Boolean);const c=[1,2,3,4].map(k=>v.filter(x=>x===k).length);
+    return{q,n:v.length,m:v.length?v.reduce((a,b)=>a+b,0)/v.length:null,c,low:v.length?Math.round((c[0]+c[1])/v.length*100):0,high:v.length?Math.round((c[2]+c[3])/v.length*100):0}}).filter(x=>x.n);
+  const byM=[...items].sort((a,b)=>b.m-a.m);
+  B.push({k:"h",s:"Fortaleses del grup"});
+  B.push({k:"items",tone:"f",rows:byM.slice(0,6).map(x=>({s:`${x.q.n}. ${x.q.t}`,sub:`${x.high}% respon "Sovint" o "Sempre" · ${catN(x.q.c)}`}))});
+  const weak=[...items].sort((a,b)=>a.m-b.m).slice(0,6);
+  B.push({k:"h",s:"Necessitats del grup"});
+  B.push({k:"items",tone:"w",rows:weak.map(x=>({s:`${x.q.n}. ${x.q.t}`,sub:`${x.low}% respon "Mai" o "Poques vegades" · ${catN(x.q.c)}`}))});
+  B.push({k:"h",s:"Propostes de formació i acompanyament per al grup"});
+  B.push({k:"note",s:"Per als dos àmbits amb la mitjana més baixa:"});
+  sorted.slice(0,2).forEach(x=>B.push({k:"prop",h:`${x.c.k}. ${x.c.n} (${x.p}%)`,lines:[["Proposta",x.c.g]]}));
+  B.push({k:"h",s:"Propostes per a les necessitats concretes"});
+  weak.slice(0,4).forEach(x=>B.push({k:"prop",h:`${x.q.n}. ${x.q.m}`,lines:[["Grup",`${x.low}% amb "Mai" o "Poques vegades"`],["Com treballar-ho",x.q.p]]}));
+  B.push({k:"h",s:"Seguiment suggerit"});
+  ["1. Comparteix aquests resultats agregats amb el grup i obre un breu debat sobre les necessitats detectades.","2. Acordeu una o dues línies de treball comunes per al trimestre.","3. Demana a cada direcció un compromís personal a partir del seu informe individual.","4. Repetiu l'autovaloració al final del curs per veure l'evolució del grup."].forEach(s=>B.push({k:"p",s}));
+  B.push({k:"details",s:"Detall de totes les preguntes",B:CATS.map(c=>[{k:"h",s:`${c.k}. ${c.n}`},{k:"dist",rows:items.filter(x=>x.q.c===c.k).map(x=>({l:`${x.q.n}. ${x.q.t}`,c:x.c,v:`${pct(x.m)}%`}))}]).flat()});
+  return B;
+}
+function renderGroup(){
+  subscribe();
+  const all=entries();
+  const gk=e=>slug(e.grup||"")||"sense-grup",names={};
+  all.forEach(e=>{const k=gk(e);if(!names[k]||(e.grup&&/[A-ZÀ-ÿ]/.test(e.grup)))names[k]=e.grup||"(sense grup)"});
+  const groups=Object.keys(names).sort();
+  if(gFilter!=="__all"&&!groups.includes(gFilter))gFilter="__all";
+  const list=gFilter==="__all"?all:all.filter(e=>gk(e)===gFilter);
+  const label=gFilter==="__all"?"Tots els grups":names[gFilter];
+  const st={idle:db?"":"La recollida en línia no està disponible en aquesta vista; pots treballar amb codis.",loading:"Carregant les respostes en línia…",slow:"Les respostes en línia encara no arriben; és possible que no estiguin al dia.",err:"No s'han pogut llegir les respostes en línia.",ok:`${online.length} respostes rebudes en línia.`}[gState];
+  const fname="resultats-grup-gestio-temps"+(gFilter!=="__all"?"-"+gFilter:"");
+  $("group").innerHTML=`<div class="rep">
+<div class="box"><h3>Recollida de respostes</h3>
+<p class="note">Comparteix l'enllaç de l'eina amb les direccions. Pots afegir <b>#nom-del-grup</b> al final de l'enllaç perquè el grup s'ompli sol (p. ex. …#direccions-montsia). Les respostes arriben de dues maneres: enviades des de l'eina (cal que la persona tingui accés com a col·laboradora) o per codi, que pots enganxar aquí.</p>
+<p class="note">${esc(st)} ${imported.length} respostes afegides per codi.</p>
+<label class="f">Enganxa un o diversos codis (pots enganxar el text sencer d'un correu)<textarea id="codes" placeholder="${CODEV}.4321..."></textarea></label>
+<div class="actions"><button class="btn sm pri" id="addc">Afegir codis</button><button class="btn sm" id="clrc">Esborrar els codis afegits</button>${coord&&db?`<button class="btn sm" id="clro">Esborrar les respostes en línia</button>`:""}</div>
+<div class="msg" id="gmsg" role="status"></div></div>
+${all.length?`<label class="f" style="max-width:360px">Grup<select id="gsel"><option value="__all">Tots els grups (${all.length})</option>${groups.map(g=>`<option value="${esc(g)}" ${g===gFilter?"selected":""}>${esc(names[g])} (${all.filter(e=>gk(e)===g).length})</option>`).join("")}</select></label>`:""}
+${list.length?toHTML(groupBlocks(list,label))+`<p class="note">Si una mateixa persona envia en línia i també per codi, es compta dues vegades.</p>
+<div class="actions">${dlButtons("g")}<button class="btn hide" id="gcsv">Descarregar dades (CSV)</button></div><div class="msg" id="gdmsg" role="status"></div>`:`<p class="note" style="margin-top:20px">Encara no hi ha cap resposta.</p>`}
+</div>`;
+  $("addc").onclick=()=>{const f=parseCodes($("codes").value);const have=new Set(imported.map(x=>x.code));let n=0;
+    f.forEach(x=>{if(!have.has(x.code)){imported.push(x);have.add(x.code);n++}});
+    saveImp();$("codes").value="";renderGroup();$("gmsg").textContent=f.length?`${n} codis nous afegits${f.length>n?` (${f.length-n} ja hi eren)`:""}.`:"No s'ha trobat cap codi vàlid."};
+  let a1=false;$("clrc").onclick=()=>{if(!a1){a1=true;$("clrc").textContent="Segur? Clica de nou";return}imported=[];saveImp();renderGroup()};
+  if($("clro")){let a2=false;$("clro").onclick=async()=>{if(!a2){a2=true;$("clro").textContent="Segur? No es pot desfer";return}
+    try{const s=await db.collection("respostes").get();for(const d of s.docs)await db.doc("respostes/"+d.id).delete();$("gmsg").textContent="Respostes en línia esborrades."}catch(e){$("gmsg").textContent="Només la propietària de l'eina pot esborrar-les."}}}
+  if($("gsel"))$("gsel").onchange=e=>{gFilter=e.target.value;renderGroup()};
+  if(list.length){
+    wireDl("g",()=>groupBlocks(list,label),"Autovaloració de la gestió del temps",fname,$("gdmsg"),()=>$("gcsv").classList.remove("hide"));
+    $("gcsv").onclick=()=>{const rows=[["grup","origen","index_global",...CATS.map(c=>"ambit_"+c.k),...Q.map(q=>"p"+q.n)].join(";"),
+      ...list.map(e=>[`"${(e.grup||"").replace(/"/g,'""')}"`,e.src,globalOf(e.a),...catScores(e.a).map(x=>x.p??""),...Q.map(q=>e.a[q.n]||"")].join(";"))];
+      saveFile(fname+".csv","﻿"+rows.join("\r\n"),$("gdmsg"))};
+  }
+}
+
+go(step);
+if(window.claude&&window.claude.use){
+  window.claude.use("downloads").then(x=>{downloads=x;if(step==="r"||step==="g")go(step)}).catch(()=>{});
+  Promise.all([window.claude.use("db"),window.claude.use("user")]).then(async([d,u])=>{
+    db=d;user=u;
+    if(u){uid=await u.id();if(await u.canEdit())coord=true}
+    if(step==="r"||step==="g")go(step);else renderSteps();
+  }).catch(()=>{});
+}
+}
+</script>
+</body>
+</html>
